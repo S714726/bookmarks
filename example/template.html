@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bookmarks</title>
+    <meta charset="utf-8">
+    <style type="text/css">
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0px;
+      }
+
+      h1 {
+        font-size: 160%;
+        text-indent: 2em;
+      }
+      h2 { font-size: 140%; }
+      h3 { font-size: 120%; }
+      a:hover { text-decoration: underline; }
+      h3 a { color: #000; }
+      a, h3 a:hover { text-decoration: none; }
+      .headline { border-bottom: 1px solid black; }
+      .headline h1 {
+        margin-bottom: 0.25em;
+        margin-left: 2em;
+      }
+
+      #timewise, #tagwise {
+        margin: 20px;
+        margin-left: 170px;
+      }
+      #tagwise h2 {
+        margin: 10px;
+        margin-left: 3em;
+      }
+      #tagtoc {
+        float: left;
+        width: 150px;
+      }
+
+      ul { list-style: none; }
+      ul li { margin-bottom: 2em; }
+      .desc a { color: #33F; }
+      .url a {
+        font-size: 80%;
+        color: #06F;
+      }
+      ul ul li {
+        display: inline;
+        margin: 0px;
+        margin-right: 0.5em;
+      }
+      ul ul li a {
+        color: #66F;
+        font-size: 80%;
+      }
+
+      #tagtoc h3 {
+        text-align: center;
+        font-weight: normal;
+      }
+      #tagtoc li {
+        list-style-type: none;
+        margin-bottom: 0.2em;
+        margin-left: -1em;
+      }
+      #tagtoc li a { color: #00F; }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div class="headline">
+        <h1>Bookmarks</h1>
+      </div>
+      <div id="tagtoc">
+        <h3><a href="#bookmarks-by-tag">tags</a></h3>
+        <ul>
+          <li><span id="count-clojure">1</span> <a href="#tag-clojure">clojure</a></li>
+        </ul>
+      </div>
+      <div id="timewise">
+        <ul>
+          <li>
+            <div class="desc"><a href="https://github.com/cgrand/enlive">Enlive</a></div>
+            <div class="url"><a href="https://github.com/cgrand/enlive">https://github.com/cgrand/enlive</a></div>
+            <ul><li><a href="#tag-clojure">clojure</a></li></ul>
+          </li>
+        </ul>
+      </div>
+      <div class="headline">
+        <h1 id="bookmarks-by-tag">Bookmarks by Tag</h1>
+      </div>
+      <div id="tagwise">
+        <div>
+          <h2 id="tag-clojure">clojure</h2>
+          <ul>
+            <li>
+              <div class="desc"><a href="https://github.com/cgrand/enlive">Enlive</a></div>
+              <div class="url"><a href="https://github.com/cgrand/enlive">https://github.com/cgrand/enlive</a></div>
+              <ul></ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

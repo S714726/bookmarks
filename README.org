@@ -1,0 +1,27 @@
+#+TITLE:README
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:nil toc:nil ^:t -:t f:t *:t <:t skip:nil
+#+OPTIONS:   author:nil email:nil creator:nil timestamp:nil
+* bookmarks
+Generates a static HTML view of tagged bookmarks. Like a social,
+synchronized bookmark storage service (e.g. delicious) except you
+provide the synchronization and storage and it isn't social.
+
+** Usage
+1. Make an HTML template to format your bookmarks in the desired
+   fashion (see ~example/template.html~)
+2. Keep track of your bookmarks in a Clojure map structure (see
+   ~example/marks.clj~)
+3. Use the program to translate your bookmark-map into a static web
+   page
+
+** Installation
+Download the standalone jar and run directly, or
+
+1. Install [[https://github.com/technomancy/leiningen][Leiningen]]
+2. ~lein uberjar~ from the project directory to build the jar
+
+** License
+Copyright (C) 2010-2011 S714726
+
+Distributed under the Eclipse Public License, the same as Clojure.
