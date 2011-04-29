@@ -1,4 +1,4 @@
-(defproject bookmarks "1.0.0"
+(defproject bookmarks "1.1.0"
   :description "HTML bookmark page generator"
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
