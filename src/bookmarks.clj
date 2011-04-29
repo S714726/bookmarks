@@ -22,7 +22,7 @@
 (defn bookmark-tags [template]
   (html/snippet
    template
-   [:#timewise :ul :li :ul :> html/first-child]
+   [:#timewise :> html/first-child :> html/first-child :ul :> html/first-child]
    [tag]
    [:li :a] (html/do-> (html/content tag)
                        (html/set-attr :href (str "#tag-" tag)))))
@@ -78,8 +78,8 @@
      [:#datestamp]    (html/content date)
      [:#timewise :ul] (html/content (map blsnip bookmarks))
      [:#tagtoc :ul]   (html/content (map (tag-toc template bookmarks) tags))
-     [:#tagwise :div] (html/substitute
-                        (map (subset-list template bookmarks blsnip) tags)))))
+     [:#tagwise]      (html/content
+                       (map (subset-list template bookmarks blsnip) tags)))))
 
 (defn -main [& args]
   (let [[template bookmark-file output & rest] args]
