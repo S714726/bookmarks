@@ -75,9 +75,9 @@
   (let [blsnip (bookmark-list template (bookmark-tags template))]
     (html/template
      template [bookmarks tags date]
-     [:title :> html/text-node] (html/after " (generated " date ")")
+     [:#datestamp]    (html/content date)
      [:#timewise :ul] (html/content (map blsnip bookmarks))
-     [:#tagtoc :ul] (html/content (map (tag-toc template bookmarks) tags))
+     [:#tagtoc :ul]   (html/content (map (tag-toc template bookmarks) tags))
      [:#tagwise :div] (html/substitute
                         (map (subset-list template bookmarks blsnip) tags)))))
 
