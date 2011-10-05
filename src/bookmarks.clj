@@ -1,10 +1,7 @@
 (ns bookmarks
   (:require [net.cgrand.enlive-html :as html]
-            [clojure.contrib.str-utils2 :as str]
             [clojure.set :as set])
-  (:import java.io.File
-           java.util.Date
-           java.text.DateFormat)
+  (:import java.text.DateFormat)
   (:gen-class))
 
 (defn tags-from-bookmarks [bookmarks]
@@ -13,8 +10,6 @@
              (apply set/union)
              (sort))
         :untagged))
-
-(defn tag-string [tag] (apply str (rest (str tag))))
 
 (defn augment-untagged [link] (if (empty? (:tags link))
                                 (assoc link :tags #{:untagged}) link))
@@ -37,7 +32,7 @@
    [:div.url :a] (html/do-> (html/content link)
                             (html/set-attr :href link))
    [:ul] (html/content (->> tags
-                            (map tag-string)
+                            (map name)
                             (map tag-list)))))
 
 (defn tag-toc [template bookmarks]
@@ -51,8 +46,8 @@
                            (map augment-untagged)
                            (filter #(get (:tags %) tag))
                            (count))))
-                (html/set-attr :id (str "count-" (tag-string tag))))
-   [:li :a] (let [s (tag-string tag)]
+                (html/set-attr :id (str "count-" (name tag))))
+   [:li :a] (let [s (name tag)]
              (html/do-> (html/content s)
                         (html/set-attr :href (str "#tag-" s))))))
 
@@ -61,7 +56,7 @@
    template
    [:#tagwise :> html/first-child]
    [tag]
-   [:h2] (let [s (tag-string tag)]
+   [:h2] (let [s (name tag)]
            (html/do-> (html/content s)
                       (html/set-attr :id (str "tag-" s))))
    [:ul] (html/content (->> bookmarks
@@ -90,8 +85,8 @@
          [bookmarks
           (tags-from-bookmarks bookmarks)
           (. (DateFormat/getDateInstance DateFormat/SHORT)
-             format (Date.))]
-         (apply (template-from-file (File. template)))
+             format (java.util.Date.))]
+         (apply (template-from-file (java.io.File. template)))
          (apply str)
          (spit output))))))
 
