@@ -1,13 +1,17 @@
 (ns bookmarks
-  (:require [net.cgrand.enlive-html :as html]
-            [clojure.set :as set])
+  (:require [net.cgrand.enlive-html :as html])
+  (:use [clojure.set :only [union]])
   (:import java.text.DateFormat)
   (:gen-class))
+
+(def usage-base "Usage: java -jar bookmarks-latest.jar BOOKMARKS ")
+(def usage-add (str usage-base "add LINK [-t TITLE] [TAGS]"))
+(def usage-gen (str usage-base "gen TEMPLATE"))
 
 (defn tags-from-bookmarks [bookmarks]
   (conj (->> bookmarks
              (map #(get % :tags))
-             (apply set/union)
+             (apply union)
              (sort))
         :untagged))
 
@@ -76,17 +80,47 @@
      [:#tagwise]      (html/content
                        (map (subset-list template bookmarks blsnip) tags)))))
 
-(defn -main [& args]
-  (let [[template bookmark-file output & rest] args]
-    (if-not output
-      (println "Usage: java -jar standalone-jar template bookmarks output")
-      (let [bookmarks (load-string (str "[" (slurp bookmark-file) "]"))]
-        (->>
-         [bookmarks
-          (tags-from-bookmarks bookmarks)
-          (. (DateFormat/getDateInstance DateFormat/SHORT)
-             format (java.util.Date.))]
-         (apply (template-from-file (java.io.File. template)))
-         (apply str)
-         (spit output))))))
+(defn bookmarks-generate
+  ([bookmarks [template & rest]]
+     (if-not template
+       (println usage-gen)
+       (->> [bookmarks
+             (tags-from-bookmarks bookmarks)
+             (. (DateFormat/getDateInstance DateFormat/SHORT)
+                format (java.util.Date.))]
+            (apply (template-from-file (java.io.File. template)))
+            (apply str)
+            (println)))))
 
+
+(defn title-from-web [link]
+  (try
+    (->> (html/select (html/html-resource (java.net.URL. link))
+                      #{[:head :title] [:h1]})
+         (map html/text)
+         (first))
+    ;; MalformedURL, UnknownHost, etc.
+    (catch Exception ex link)))
+
+(defn bookmarks-add
+  ([bookmarks [link title-flag title-opt & rest]]
+     (if-not link
+       (println usage-add)
+       (let [[title tags] (if (= title-flag "-t")
+                            [title-opt rest]
+                            [(title-from-web link)
+                             (remove nil? (conj rest title-flag title-opt))])]
+         (prn (conj bookmarks
+                    {:title title, :link link
+                     :tags (set (map keyword tags))}))))))
+
+
+(defn -main [& args]
+  (let [[bookmark-file operation & rest] args]
+    (if-not bookmark-file
+      (println (str usage-add "\n" usage-gen))
+      (let [bookmarks (read-string (slurp bookmark-file))]
+        (case operation
+              "add" (bookmarks-add bookmarks rest)
+              "gen" (bookmarks-generate bookmarks rest)
+              (println (str usage-add "\n" usage-gen)))))))
