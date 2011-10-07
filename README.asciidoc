@@ -13,6 +13,8 @@ Usage
   fashion (see +example/template.html+)
 . Keep track of your bookmarks in a Clojure map structure (see
   +example/marks.clj+)
+.. Add elements to this map structure manually or via the program
+   itself
 . Use the program to translate your bookmark-map into a static web
   page
 
