@@ -10,12 +10,11 @@
 (deftest homomorphism
   (let [bookmarks (load-string (str "[" (slurp "example/marks.clj") "]"))
         args [bookmarks (tags-from-bookmarks bookmarks) "datestamp"]
-        original (apply (template-from-file (File. "example/template.html"))
-                        args)]
+        original (apply (entire-page (File. "example/template.html")) args)]
     (is (= (apply str original)
            (apply str (apply (->> original
                                   (apply str)
                                   (StringReader.)
                                   (html/html-resource)
-                                  (template-from-file))
+                                  (entire-page))
                              args))))))

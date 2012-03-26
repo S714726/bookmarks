@@ -18,7 +18,7 @@
 (defn augment-untagged [link] (if (empty? (:tags link))
                                 (assoc link :tags #{:untagged}) link))
 
-(defn bookmark-tags [template]
+(defn individual-bookmark-tags [template]
   (html/snippet
    template
    [:#timewise :> html/first-child :> html/first-child :ul :> html/first-child]
@@ -26,7 +26,7 @@
    [:li :a] (html/do-> (html/content tag)
                        (html/set-attr :href (str "#tag-" tag)))))
 
-(defn bookmark-list [template tag-list]
+(defn individual-bookmark [template ind-tags-snippet]
   (html/snippet
    template
    [:#timewise :> html/first-child :> html/first-child]
@@ -37,7 +37,7 @@
                             (html/set-attr :href link))
    [:ul] (html/content (->> tags
                             (map name)
-                            (map tag-list)))))
+                            (map ind-tags-snippet)))))
 
 (defn tag-toc [template bookmarks]
   (html/snippet
@@ -55,7 +55,7 @@
               (html/do-> (html/content s)
                          (html/set-attr :href (str "#tag-" s))))))
 
-(defn subset-list [template bookmarks link-list]
+(defn tagwise [template bookmarks individual-bookmark-snippet]
   (html/snippet
    template
    [:#tagwise :> html/first-child]
@@ -68,17 +68,18 @@
                             (filter #(get (get % :tags) tag))
                             (map (fn [link] (assoc link :tags
                                                    (disj (:tags link) tag))))
-                            (map link-list)))))
+                            (map individual-bookmark-snippet)))))
 
-(defn template-from-file [template]
-  (let [blsnip (bookmark-list template (bookmark-tags template))]
+(defn entire-page [template]
+  (let [ind-bm-snippet (individual-bookmark
+                        template (individual-bookmark-tags template))]
     (html/template
      template [bookmarks tags date]
      [:#datestamp]    (html/content date)
-     [:#timewise :ul] (html/content (map blsnip bookmarks))
+     [:#timewise :ul] (html/content (map ind-bm-snippet bookmarks))
      [:#tagtoc :ul]   (html/content (map (tag-toc template bookmarks) tags))
      [:#tagwise]      (html/content
-                       (map (subset-list template bookmarks blsnip) tags)))))
+                       (map (tagwise template bookmarks ind-bm-snippet) tags)))))
 
 (defn bookmarks-generate
   ([file [template output & rest]]
@@ -89,7 +90,7 @@
                (tags-from-bookmarks bookmarks)
                (. (DateFormat/getDateInstance DateFormat/SHORT)
                   format (java.util.Date.))]
-              (apply (template-from-file (java.io.File. template)))
+              (apply (entire-page (java.io.File. template)))
               (apply str)
               (println-str)
               (spit output))))))
