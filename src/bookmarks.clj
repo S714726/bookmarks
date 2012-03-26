@@ -1,12 +1,14 @@
 (ns bookmarks
   (:require [net.cgrand.enlive-html :as html])
   (:use [clojure.set :only [union]])
-  (:import java.text.DateFormat)
+  (:import java.text.SimpleDateFormat)
   (:gen-class))
 
 (def usage-base "Usage: java -jar bookmarks-latest.jar BOOKMARKS ")
 (def usage-add (str usage-base "add LINK [-t TITLE] [TAGS]"))
 (def usage-gen (str usage-base "gen TEMPLATE OUTPUT"))
+
+(def date-serialize "yyyy/MM/dd HH:mm")
 
 (defn tags-from-bookmarks [bookmarks]
   (conj (->> bookmarks
@@ -30,11 +32,16 @@
   (html/snippet
    template
    [:#timewise :> html/first-child :> html/first-child]
-   [{:keys [title link tags]}]
+   [{:keys [title link date tags]}]
    [:div.desc :a] (html/do-> (html/content title)
                              (html/set-attr :href link))
-   [:div.url :a] (html/do-> (html/content link)
-                            (html/set-attr :href link))
+   [:span.date]   (html/do-> (html/content
+                              (if date
+                                (. (SimpleDateFormat. "yyyy/MM/dd") format
+                                   (. (SimpleDateFormat. date-serialize)
+                                      parse date)))))
+   [:span.url :a] (html/do-> (html/content link)
+                             (html/set-attr :href link))
    [:ul] (html/content (->> tags
                             (map name)
                             (map ind-tags-snippet)))))
@@ -88,8 +95,7 @@
          (println usage-gen)
          (->> [bookmarks
                (tags-from-bookmarks bookmarks)
-               (. (DateFormat/getDateInstance DateFormat/SHORT)
-                  format (java.util.Date.))]
+               (. (SimpleDateFormat. "yyyy/MM/dd") format (java.util.Date.))]
               (apply (entire-page (java.io.File. template)))
               (apply str)
               (println-str)
@@ -115,7 +121,9 @@
                             [(title-from-web link)
                              (remove nil? (conj rest title-flag title-opt))])]
          (spit file (prn-str (conj bookmarks
-                                   {:title title, :link link
+                                   {:title title, :link link,
+                                    :date (. (SimpleDateFormat. date-serialize)
+                                             format (java.util.Date.))
                                     :tags (set (map keyword tags))})))))))
 
 
