@@ -76,12 +76,20 @@
    template
    [:#timetoc :> html/first-child]
    [year]
-   [:li :span] (html/content year)
-   [:li :ul]   (html/content
-                (map (time-toc-month template)
-                     (->> months
-                          (map first)
-                          (filter #(= year (apply str (take-last 4 %)))))))))
+   [:li :a] (html/do->
+             (html/content year)
+             (html/set-attr
+              :href (str "#date-"
+                         (string/replace
+                          (->> months
+                               (map first)
+                               (filter #(= year (apply str (take-last 4 %))))
+                               (first)) " " ""))))
+   [:li :ul] (html/content
+              (map (time-toc-month template)
+                   (->> months
+                        (map first)
+                        (filter #(= year (apply str (take-last 4 %)))))))))
 
 (defn tag-toc [template bookmarks]
   (html/snippet
