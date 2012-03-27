@@ -8,8 +8,10 @@
 ;;; Run output from the program through again as a template with the same
 ;;;   bookmark set
 (deftest homomorphism
-  (let [bookmarks (load-string (str "[" (slurp "example/marks.clj") "]"))
-        args [bookmarks (tags-from-bookmarks bookmarks) "datestamp"]
+  (let [bookmarks (read-string (slurp "example/marks.clj"))
+        args [bookmarks
+              (months-from-bookmarks bookmarks)
+              (tags-from-bookmarks bookmarks) "datestamp"]
         original (apply (entire-page (File. "example/template.html")) args)]
     (is (= (apply str original)
            (apply str (apply (->> original

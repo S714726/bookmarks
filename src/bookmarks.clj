@@ -1,7 +1,9 @@
 (ns bookmarks
   (:require [net.cgrand.enlive-html :as html])
+  (:require [clojure.string :as string])
   (:use [clojure.set :only [union]])
-  (:import java.text.SimpleDateFormat)
+  (:import java.text.SimpleDateFormat
+           java.util.Date)
   (:gen-class))
 
 (def usage-base "Usage: java -jar bookmarks-latest.jar BOOKMARKS ")
@@ -17,13 +19,27 @@
              (sort))
         :untagged))
 
+;;; Assume the bookmarks are already sorted in reverse chronological order
+(defn months-from-bookmarks [bookmarks]
+  (let [pretty (SimpleDateFormat. "MMMMMMMMM yyyy")
+        serial (SimpleDateFormat. date-serialize)]
+    (map #(conj %1 (. pretty format (second %1)))
+         (partition 2 1
+                    (conj (->> bookmarks
+                               (map #(get % :date))
+                               (map #(. serial parse %))
+                               (map #(. pretty parse (. pretty format %)))
+                               (distinct))
+                          (. pretty parse "December 3000"))))))
+
 (defn augment-untagged [link] (if (empty? (:tags link))
                                 (assoc link :tags #{:untagged}) link))
 
 (defn individual-bookmark-tags [template]
   (html/snippet
    template
-   [:#timewise :> html/first-child :> html/first-child :ul :> html/first-child]
+   [:#timewise :> html/first-child :> (html/nth-child 2) :> html/first-child
+    :ul :> html/first-child]
    [tag]
    [:li :a] (html/do-> (html/content tag)
                        (html/set-attr :href (str "#tag-" tag)))))
@@ -31,7 +47,7 @@
 (defn individual-bookmark [template ind-tags-snippet]
   (html/snippet
    template
-   [:#timewise :> html/first-child :> html/first-child]
+   [:#timewise :> html/first-child :> (html/nth-child 2) :> html/first-child]
    [{:keys [title link date tags]}]
    [:div.desc :a] (html/do-> (html/content title)
                              (html/set-attr :href link))
@@ -62,6 +78,24 @@
               (html/do-> (html/content s)
                          (html/set-attr :href (str "#tag-" s))))))
 
+(defn timewise [template bookmarks individual-bookmark-snippet]
+  (html/snippet
+   template
+   [:#timewise :> html/first-child]
+   [month]
+   [:h2] (html/do-> (html/content (first month))
+                    (html/set-attr :id (str "date-" (string/replace
+                                                     (first month) " " ""))))
+   [:ul] (html/content (let [serial (SimpleDateFormat. date-serialize)
+                             belongs? (fn [bm]
+                                        (let [date (. serial parse (get bm :date))]
+                                          (and
+                                           (= -1 (compare date (second month)))
+                                           (<= 0 (compare date (nth month 2))))))]
+                         (->> bookmarks
+                              (filter belongs?)
+                              (map individual-bookmark-snippet))))))
+
 (defn tagwise [template bookmarks individual-bookmark-snippet]
   (html/snippet
    template
@@ -81,21 +115,26 @@
   (let [ind-bm-snippet (individual-bookmark
                         template (individual-bookmark-tags template))]
     (html/template
-     template [bookmarks tags date]
-     [:#datestamp]    (html/content date)
-     [:#timewise :ul] (html/content (map ind-bm-snippet bookmarks))
-     [:#tagtoc :ul]   (html/content (map (tag-toc template bookmarks) tags))
-     [:#tagwise]      (html/content
-                       (map (tagwise template bookmarks ind-bm-snippet) tags)))))
+     template [bookmarks months tags date]
+     [:#datestamp]  (html/content date)
+     [:#timewise]   (html/content
+                     (map (timewise template bookmarks ind-bm-snippet) months))
+     [:#tagtoc :ul] (html/content (map (tag-toc template bookmarks) tags))
+     [:#tagwise]    (html/content
+                     (map (tagwise template bookmarks ind-bm-snippet) tags)))))
 
 (defn bookmarks-generate
   ([file [template output & rest]]
-     (let [bookmarks (read-string (slurp file))]
+     (let [bookmarks (->> (read-string (slurp file))
+                          (sort-by #(. (SimpleDateFormat. date-serialize)
+                                       parse (get % :date)))
+                          (reverse))]
        (if-not (and template output)
          (println usage-gen)
          (->> [bookmarks
+               (months-from-bookmarks bookmarks)
                (tags-from-bookmarks bookmarks)
-               (. (SimpleDateFormat. "yyyy/MM/dd") format (java.util.Date.))]
+               (. (SimpleDateFormat. "yyyy/MM/dd") format (Date.))]
               (apply (entire-page (java.io.File. template)))
               (apply str)
               (println-str)
