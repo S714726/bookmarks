@@ -27,6 +27,6 @@ Download the standalone jar and run directly, or
 
 License
 -------
-Copyright (C) 2010-2011 S714726
+Copyright (C) 2010-2012 S714726
 
 Distributed under the Eclipse Public License, the same as Clojure.

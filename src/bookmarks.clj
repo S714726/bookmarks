@@ -65,7 +65,7 @@
 (defn time-toc-month [template]
   (html/snippet
    template
-   [:#timetoc :ul :> html/first-child]
+   [:#timetoc :> html/first-child :> (html/nth-child 2) :> html/first-child]
    [month]
    [:li :a] (html/do-> (html/content (apply str (drop-last 5 month)))
                        (html/set-attr

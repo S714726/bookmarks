@@ -3,3 +3,4 @@ pom.xml
 lib
 classes
 !bookmarks-latest.jar
+.lein*
