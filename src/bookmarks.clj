@@ -62,10 +62,31 @@
                             (map name)
                             (map ind-tags-snippet)))))
 
+(defn time-toc-month [template]
+  (html/snippet
+   template
+   [:#timetoc :ul :> html/first-child]
+   [month]
+   [:li :a] (html/do-> (html/content (apply str (drop-last 5 month)))
+                       (html/set-attr
+                        :href (str "#date-" (string/replace month " " ""))))))
+
+(defn time-toc [template months]
+  (html/snippet
+   template
+   [:#timetoc :> html/first-child]
+   [year]
+   [:li :span] (html/content year)
+   [:li :ul]   (html/content
+                (map (time-toc-month template)
+                     (->> months
+                          (map first)
+                          (filter #(= year (apply str (take-last 4 %)))))))))
+
 (defn tag-toc [template bookmarks]
   (html/snippet
    template
-   [:#tagtoc :ul :> html/first-child]
+   [:#tagtoc :> html/first-child]
    [tag]
    [:li :span] (html/do->
                 (html/content 
@@ -119,7 +140,12 @@
      [:#datestamp]  (html/content date)
      [:#timewise]   (html/content
                      (map (timewise template bookmarks ind-bm-snippet) months))
-     [:#tagtoc :ul] (html/content (map (tag-toc template bookmarks) tags))
+     [:#timetoc]     (html/content (map (time-toc template months)
+                                        (->> months
+                                             (map first)
+                                             (map #(apply str (take-last 4 %)))
+                                             (distinct))))
+     [:#tagtoc]     (html/content (map (tag-toc template bookmarks) tags))
      [:#tagwise]    (html/content
                      (map (tagwise template bookmarks ind-bm-snippet) tags)))))
 

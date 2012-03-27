@@ -32,7 +32,7 @@
         margin: 10px;
         margin-left: 3em;
       }
-      #tagtoc {
+      #toc {
         float: left;
         width: 150px;
       }
@@ -52,16 +52,18 @@
         font-size: 80%;
       }
 
-      #tagtoc h3 {
+      #toc h3 {
         text-align: center;
         font-weight: normal;
+        margin-bottom: -0.5em;
       }
-      #tagtoc li {
+      #toc li {
         list-style-type: none;
         margin-bottom: 0.2em;
         margin-left: -1em;
       }
-      #tagtoc li a { color: #00F; }
+      #toc li a { color: #00F; }
+      #toc ul ul li { display: block; }
     </style>
   </head>
   <body>
@@ -69,10 +71,17 @@
       <div class="headline">
         <h1>Bookmarks (generated <span id="datestamp">2011/03/10</span>)</h1>
       </div>
-      <div id="tagtoc">
+      <div id="toc">
         <h3><a href="#bookmarks-by-tag">tags</a></h3>
-        <ul>
+        <ul id="tagtoc">
           <li><span id="count-clojure">1</span> <a href="#tag-clojure">clojure</a></li>
+        </ul>
+        <ul id="timetoc">
+          <li><span>2011</span>
+            <ul>
+              <li><a href="#date-March2011">March</a></li>
+            </ul>
+          </li>
         </ul>
       </div>
       <div id="timewise">
